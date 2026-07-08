@@ -1,0 +1,25 @@
+name: Notify site
+
+# When the CMS saves a news item (push to content/news or images),
+# tell the website repo to rebuild — no more polling.
+on:
+  push:
+    paths:
+      - 'content/news/**'
+      - 'images/**'
+
+permissions: {}
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger website rebuild
+        env:
+          TOKEN: ${{ secrets.SITE_DISPATCH_TOKEN }}
+        run: |
+          curl -sSf -X POST \
+            -H "Authorization: token $TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository_owner }}/ps-02wkdm/dispatches" \
+            -d '{"event_type":"news-updated"}'
